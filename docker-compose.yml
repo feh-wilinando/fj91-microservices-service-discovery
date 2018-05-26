@@ -1,0 +1,33 @@
+version: '3'
+
+
+services:
+  loadbalance:
+    image: nginx:alpine
+    command: /bin/sh -c "cat /etc/nginx/conf.d/loadbalance.nginx > /etc/nginx/conf.d/loadbalance.conf && nginx -g 'daemon off;'"
+    volumes:
+      - ./nginx/config/loadbalance/:/etc/nginx/conf.d/
+    ports:
+      - "8010:80"
+    depends_on:
+      - peer1
+      - peer2
+      - peer3
+
+  peer1:
+    image: microservice-service-discovery
+    environment:
+      - "DEFAULT_ZONE=http://peer2:8080/eureka/,http://peer3:8080/eureka/"
+    restart: on-failure
+
+  peer2:
+    image: microservice-service-discovery
+    environment:
+      - "DEFAULT_ZONE=http://peer1:8080/eureka/,http://peer3:8080/eureka/"
+    restart: on-failure
+
+  peer3:
+    image: microservice-service-discovery
+    environment:
+      - "DEFAULT_ZONE=http://peer1:8080/eureka/,http://peer2:8080/eureka/"
+    restart: on-failure

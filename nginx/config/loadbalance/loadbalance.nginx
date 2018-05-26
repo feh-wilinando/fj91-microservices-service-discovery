@@ -1,0 +1,17 @@
+
+upstream loadbalance {
+    server peer1:8080;
+    server peer2:8080;
+    server peer3:8080;
+}
+
+server {
+
+    location / {
+        proxy_pass http://loadbalance/;
+
+        add_header X-Upstream    $upstream_addr;
+
+    }
+
+}
